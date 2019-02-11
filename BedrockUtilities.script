@@ -1,0 +1,71 @@
+﻿//Handler to create a View
+to createView strBuildView, strViewDisplay, strLayoutType, strAvailableComponent
+    If ImageFound("ViewBuilder") Then
+        Click FoundImageLocation()
+        If ImageFound(text:strBuildView) Then
+            Click FoundImageLocation()    
+        End If
+        Click "Button_Begin"
+        WaitFor 120, "Button_Add"
+        Wait 5
+        Click "Button_Add"
+        (*WaitFor 20, "Label_Display"*)
+        Set the SearchRectangle to (715,352,1288,841)
+        (*Click "Label_Display"*)
+        TypeText strViewDisplay
+        Click "Combo_LayoutTypes"
+        TypeText strLayoutType & returnKey
+        If ImageFound( "Label_AvailableComponents") Then
+            Click FoundImageLocation()+(25,50)
+            Put FoundImageLocation()+(-63,11) into SR1
+            Insert FoundImageLocation()+(194,322) into SR1
+            Typetext strAvailableComponent
+            If ImageFound(text:strAvailableComponent, SearchRectangle:SR1) Then
+                DoubleClick FoundImageLocation()
+            End If
+        End If
+        Set the SearchRectangle to ()
+        Click "Button_Save"
+        Click "Button_Finish"
+        Click "Button_Finish"
+        Else
+        LogError "View Builder is not displayed"
+        Exit All
+    End If
+end createView
+
+
+//Handler to create a ViewPoint
+to createViewPoint strAddViewPoint, strViewPoint, strViewDisplay
+    If ImageFound("Label_ViewPointSetup") Then
+        Click FoundImageLocation()
+        If ImageFound(text:strAddViewPoint) Then
+            Click FoundImageLocation()    
+        End If
+        Click "Button_Begin"
+        WaitFor 120, "Button_Add"
+        Click "Button_Add"
+        Wait 5
+        Click "Label_Display"
+        TypeText strViewPoint
+        If ImageFound("Label_AvailableMPages") Then
+            Click FoundImageLocation()+(25,50)
+            Put FoundImageLocation()+(-50,14) into SR1
+            Insert FoundImageLocation()+(214,298) into SR1
+            Set the SearchRectangle to SR1
+            Repeat until ImageFound(text:strViewDisplay)
+                TypeText pageDown
+            End Repeat
+            If ImageFound(text:strViewDisplay, SearchRectangle:SR1) Then
+                DoubleClick FoundImageLocation()
+            End If
+        End If
+        Set the SearchRectangle to ()
+        Click "Button_Save"
+        Click "Button_Finish"
+        Click "Button_Finish"
+    Else
+        LogError "ViewPoint setup is not displayed"
+        Exit All
+    End If
+end createViewPoint

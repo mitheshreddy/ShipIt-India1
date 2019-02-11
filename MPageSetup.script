@@ -1,0 +1,107 @@
+﻿(****************************************************************************************************************************************
+Name:       Mpage Setup             
+Description:    To set up Mpage component during the domain refresh or if a new MPage ha sto be created 
+Helper Suites: https://github.cerner.com/EggPlant/IPDev-Shared-Millennium
+
+******************************************  Assigning Test Data to the Variables  **************************************************)
+
+Put JSONValue(file ResourcePath("MPages.json")) into mpageData
+Put mpageData.UserName into UserName
+Put mpageData.Password into Password
+Put mpageData.Domain into Domain
+Put mpageData.PrefMaint.ApplicationField into ApplicationField
+Put mpageData.PrefMaint.UserPosition into UserPosition
+Put mpageData.PrefMaint.UserLastName into UserLastName
+Put mpageData.PrefMaint.UserFirstName into UserFirstName
+Put mpageData.PrefMaint.UserLevel into UserLevel
+Put mpageData.PrefMaint.ChartLevel into strChartLevel
+Put mpageData.PrefMaint.TabName into strTab
+Put mpageData.PrefMaint.Preference.Preference1 into strPreference1
+Put mpageData.PrefMaint.Preference.Preference2 into strPreference2
+Put mpageData.PrefMaint.Preference.Preference3 into strPreference3
+Put "C:\Program Files\Cerner\Bedrock\Bedrock.exe" into strApplication
+Put mpageData.Bedrock.ConfigurationTab into strConfigurationTab
+Put mpageData.Bedrock.SectionHeader into strSectionHeader
+Put mpageData.Bedrock.ViewBuilder into strViewBuilder
+Put mpageData.Bedrock.ViewPoint into strViewPoint
+Put "OK" into strOK
+(*Log UserName,Password,Domain,ApplicationField,UserPosition,UserLastName,UserFirstName,UserLevel,strChartLevel,strTab, strPreference1,strPreference2,strPreference3,strApplication,strConfigurationTab,strSectionHeader,strViewBuilder, strViewPoint*)
+
+(*******************************************  Automated Test Case  *******************************************************************)
+
+Log "Step 1: Open Bedrock and select the wizard to be set"
+TypeText WindowsKey & "r" 
+TypeText strApplication 
+TypeText ReturnKey
+Run Millennium_LogIn_window.LogIntoMillenniumApps UserName, Password, Domain
+WaitFor 20, "Application_Bedrock"
+If ImageFound(text:strConfigurationTab) Then
+    Click FoundImageLocation()
+Else
+    LogError strConfigurationTab & "is not displayed"
+    Exit All
+End If
+If ImageFound(text:strSectionHeader, SearchRectangle:(11,178,608,1031)) Then
+    Click FoundImageLocation()
+Else
+    LogError strSectionHeader & "is not displayed"
+    Exit All
+End If
+Set the SearchRectangle to ()
+
+---------------------------------------------------------------------------------------------------------------
+
+Log "Step 2: Create a View in Bedrock"
+Run "BedrockUtilities".createView strViewBuilder.BuildView, strViewBuilder.ViewDisplay, strViewBuilder.LayoutType, strViewBuilder.AvailableComponent
+Wait 5 //For window to close
+
+---------------------------------------------------------------------------------------------------------------
+
+Log "Step 3: Create a ViewPoint in Bedrock"
+Run "BedrockUtilities".createViewPoint strViewPoint.BuildViewPoint, strViewPoint.ViewPointDisplay, strViewBuilder.ViewDisplay
+
+---------------------------------------------------------------------------------------------------------------
+
+Log "Step 4: Close Bedrock"
+TypeText altKey, F4
+Wait 10// for application to close
+
+---------------------------------------------------------------------------------------------------------------
+
+Log "Step 5: OpenPrefMaint for the position level or UserLevel"
+If UserLevel Equals "Yes" Then
+    Run "Prefmaint".LoginToPrefMaint_SelectUserAndSearch UserName, Password, Domain, ApplicationField, UserPosition, UserLastName, UserFirstName
+Else
+    Run "Prefmaint".OpenPrefmaint UserName, Password, Domain
+    waitfor 20,"Prefmaint/Text_Application"
+    Run "Prefmaint".SelectApplication ApplicationField
+    Run "Prefmaint".SelectPosition UserPosition
+    Click "Prefmaint/Icon_SearchPreference_64bit"
+End If
+
+---------------------------------------------------------------------------------------------------------------
+
+Log "Step 6: Create the MPage tab in Prefmaint"
+Put "Millennium_MaximizeRestore_Application".MaximizeMillenniumApplications  into boolMaximize 
+Run "Prefmaint".ClickLevel strChartLevel
+If ImageFound(120, text:"Add Tab") Then
+    Click FoundImageLocation()
+End If
+Run "Prefmaint".ClickUnderAvailableTabs strTab
+Set the SearchRectangle to (18,117,262,966)
+Put EveryImageLocation(text:strTab) into numReport
+Click last item of numReport
+Set the SearchRectangle to ()
+Run "Prefmaint".ModifyFreeTextPreference strPreference1.Name,strPreference1.Value
+TypeText shiftKey & tabKey
+TypeText rightArrow
+TypeText rightArrow
+Run "Prefmaint".ModifyFreeTextPreference strPreference2.Name,strPreference2.Value
+Run "Prefmaint".ModifyFreeTextPreference strPreference3.Name,strPreference3.Value
+Click Text:strOK
+
+---------------------------------------------------------------------------------------------------------------
+
+Log "Step 7: Close PrefMaint"
+TypeText altKey, F4
+TypeText altKey, F4
